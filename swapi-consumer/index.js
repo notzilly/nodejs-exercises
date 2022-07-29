@@ -14,6 +14,15 @@ async function retrievePages() {
     return Promise.all(pagePromises)
 }
 
+async function retrieveStarships(uids) {
+    let starshipPromises = []
+    uids.forEach(uid => {
+        starshipPromises.push(fetch(`${apiUrl}${uid}/`))
+    })
+
+    return Promise.all(starshipPromises)
+}
+
 
 const pagePromises = await retrievePages()
 const pages = await Promise.all(pagePromises.map(res => res.json()))
@@ -22,6 +31,11 @@ const starshipsUids = pages
     .flatMap(page => page.results)
     .map(starship => starship.uid)
 
+const starshipPromises = await retrieveStarships(starshipsUids)
+const starships = await Promise.all(starshipPromises.map(res => res.json()))
 
-console.log(starshipsUids)
+const starshipResults = starships
+    .map(page => page.properties)
+
+console.log(starshipResults)
 
