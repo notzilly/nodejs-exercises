@@ -1,6 +1,8 @@
 import fetch from 'node-fetch'
+import { Pool, throttle } from './pool.js'
 
 const apiUrl = 'https://www.swapi.tech/api/starships/'
+const pool = new Pool(3)
 
 async function retrievePages() {
     const firstRes = await fetch(apiUrl)
@@ -19,23 +21,28 @@ async function retrieveStarships(uids) {
     uids.forEach(uid => {
         starshipPromises.push(fetch(`${apiUrl}${uid}/`))
     })
-
     return Promise.all(starshipPromises)
 }
 
+async function jobQueued(response) {
+    const close = await pool.open()
+    const result = await throttle(response.json(), 300).then(close)
+    return result;
+}
 
 const pagePromises = await retrievePages()
-const pages = await Promise.all(pagePromises.map(res => res.json()))
+const pages = await Promise.all(pagePromises.map(jobQueued))
+    .catch(err => console.error(err))
 
 const starshipsUids = pages
     .flatMap(page => page.results)
     .map(starship => starship.uid)
 
 const starshipPromises = await retrieveStarships(starshipsUids)
-const starships = await Promise.all(starshipPromises.map(res => res.json()))
+const starships = await Promise.all(starshipPromises.map(jobQueued))
+    .catch(err => console.error(err))
 
 const starshipResults = starships
-    .map(page => page.properties)
+    .map(starship => starship.result.properties)
 
-console.log(starshipResults)
-
+console.log(starshipResults);
