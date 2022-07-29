@@ -8,7 +8,7 @@ Install by running `$ npm install`.
 
 ## Usage
 
-`$ node index.js *DISTANCE*`
+`$ node index.js TRIP_DISTANCE`, where TRIP_DISTANCE is an integer.
 
 ## Output
 
