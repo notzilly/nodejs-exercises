@@ -1,3 +1,4 @@
+// credit and explanation: https://stackoverflow.com/questions/67593582/using-setinterval-with-a-map-method-in-array-and-returning-as-a-promise
 class Pool {
     constructor (size = 4) { Object.assign(this, { pool: new Set, stack: [], size }) }
     open () { return this.pool.size < this.size ? this.deferNow() : this.deferStacked() }
